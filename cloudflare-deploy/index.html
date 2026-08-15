@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>☁️ 云端长截图</title>
+<style>
+  :root{ --bg:#0f172a; --card:#1e293b; --line:#334155; --txt:#e2e8f0;
+         --muted:#94a3b8; --accent:#3b82f6; --accent2:#22c55e; --danger:#ef4444;
+         --cf-orange:#f6821d; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+       background:linear-gradient(160deg,#0f172a,#111827);color:var(--txt);min-height:100vh;padding:24px}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:24px;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+  h1 span{font-size:13px;padding:3px 10px;border-radius:6px;font-weight:400}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  .card h2{font-size:15px;margin-bottom:12px;color:#cbd5e1}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 5px}
+  input{width:100%;background:#0b1220;border:1px solid var(--line);color:var(--txt);
+        padding:11px 12px;border-radius:9px;font-size:14px;outline:none}
+  input:focus{border-color:var(--accent)}
+  .row{display:flex;gap:10px;flex-wrap:wrap} .row>*{flex:1}
+  .chips{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+  .chip{background:#0b1220;border:1px solid var(--line);color:var(--muted);
+        padding:9px 14px;border-radius:9px;cursor:pointer;font-size:13px;user-select:none}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.go{width:100%;margin-top:16px;background:var(--accent2);color:#06281a;border:none;
+            padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
+  button.go:disabled{opacity:.5;cursor:not-allowed}
+  .status{margin-top:14px;font-size:13px;color:var(--muted);min-height:20px}
+  .status.err{color:var(--danger)} .status.ok{color:var(--accent2)}
+  .result{margin-top:14px;display:none}
+  .result img{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .result a.dl{display:inline-block;margin-top:10px;background:var(--accent);color:#fff;
+               padding:9px 16px;border-radius:9px;text-decoration:none;font-size:13px}
+  .note{font-size:11px;color:#64748b;line-height:1.6;margin-top:6px}
+  .badge{font-size:11px;padding:3px 10px;border-radius:6px}
+  .badge.ok{background:#064e3b;color:#6ee7b7} .badge.err{background:#7f1d1d;color:#fca5a5}
+  .badge.cf{background:#422006;color:#fdba74}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>☁️ 云端长截图 <span id="health" class="badge">检测中…</span></h1>
+  <div class="sub">Cloudflare Browser Rendering · 常驻云端 · 无需令牌 · 打开即用</div>
+
+  <div class="card">
+    <h2>截图设置</h2>
+    <label>目标网址（必须含 http:// 或 https://）</label>
+    <input id="url" placeholder="https://example.com" autocomplete="off" />
+
+    <label>图片格式</label>
+    <div class="chips" id="fmtChips">
+      <div class="chip active" data-v="jpg">JPG</div>
+      <div class="chip" data-v="png">PNG</div>
+      <div class="chip" data-v="webp">WebP</div>
+    </div>
+
+    <label>设备</label>
+    <div class="chips" id="devChips">
+      <div class="chip active" data-v="desktop">Desktop (1280)</div>
+      <div class="chip" data-v="tablet">Tablet (768)</div>
+      <div class="chip" data-v="mobile">Mobile (375)</div>
+      <div class="chip" data-v="custom">自定义</div>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div><label>视口宽度 (px)</label><input id="width" value="1280" /></div>
+      <div><label>视口高度 (px)</label><input id="height" value="900" /></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div><label>加载等待 (ms)</label><input id="wait" value="1500" /></div>
+      <div><label>清晰度 (1x~3x)</label><input id="scale" value="2" /></div>
+    </div>
+
+    <button class="go" id="shotBtn">🚀 生成截图</button>
+    <div class="status" id="status"></div>
+    <div class="result" id="result">
+      <img id="shotImg" alt="截图结果" />
+      <br/><a class="dl" id="dlBtn" download>⬇️ 下载图片</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="note">
+      ☁️ 本服务运行在 <strong>Cloudflare 全球边缘网络</strong>上，使用 Cloudflare Browser Rendering（无头 Chromium）截取网页。
+      <br/>✅ 不依赖本机电脑、无需 GitHub 令牌、没有 2000 分钟/月限制。
+      <br/>✅ 绑定你的 <code>.dev</code> 域名后，全球 CDN 加速访问。
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let fmt='jpg', device='desktop';
+
+function bindChips(id, cb){
+  const box=$(id);
+  box.querySelectorAll('.chip').forEach(c=>{
+    c.onclick=()=>{ box.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active'); cb(c.dataset.v); };
+  });
+}
+bindChips('fmtChips', v=>fmt=v);
+bindChips('devChips', v=>device=v);
+
+function setStatus(msg, cls=''){ const s=$('status'); s.textContent=msg; s.className='status '+cls; }
+
+// 健康检查
+fetch('/api/health').then(r=>r.json()).then(j=>{
+  $('health').textContent = 'Cloudflare 在线';
+  $('health').className = 'badge cf';
+}).catch(()=>{ $('health').textContent='连接失败'; $('health').className='badge err'; });
+
+async function startShot(){
+  const url=$('url').value.trim();
+  if(!url){ setStatus('请填写目标网址','err'); return; }
+  if(!/^https?:\/\//.test(url)){ setStatus('网址必须以 http:// 或 https:// 开头','err'); return; }
+
+  $('shotBtn').disabled=true; $('result').style.display='none';
+  setStatus('① Cloudflare 边缘节点截图中…');
+
+  try{
+    const resp = await fetch('/api/screenshot',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        url, format:fmt, device,
+        fullPage:true,
+        width:$('width').value, height:$('height').value,
+        wait:$('wait').value, scale:$('scale').value
+      })
+    });
+    if(!resp.ok){
+      const err = await resp.json().catch(()=>({error:resp.statusText}));
+      setStatus('截图失败：'+(err.error||resp.status),'err');
+      $('shotBtn').disabled=false; return;
+    }
+    const blob = await resp.blob();
+    const imgUrl = URL.createObjectURL(blob);
+    $('shotImg').src = imgUrl;
+    $('dlBtn').href = imgUrl;
+    $('dlBtn').setAttribute('download', `screenshot.${fmt}`);
+    $('result').style.display='block';
+    setStatus('② 截图完成 ✓ 已显示在下方','ok');
+  }catch(e){
+    setStatus('请求失败：'+e.message,'err');
+  }
+  $('shotBtn').disabled=false;
+}
+$('shotBtn').onclick = startShot;
+</script>
+</body>
+</html>

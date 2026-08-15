@@ -1,0 +1,8 @@
+{
+  "name": "longshot-cloud",
+  "version": "1.0.0",
+  "private": true,
+  "description": "常驻云端长截图服务 - Node + Playwright(Chromium) Docker 版",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "playwright": "^1.48.0" }
+}

@@ -3,154 +3,449 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>☁️ 云端长截图</title>
+<title>LongShot Web — 网址长截图工具</title>
 <style>
-  :root{ --bg:#0f172a; --card:#1e293b; --line:#334155; --txt:#e2e8f0;
-         --muted:#94a3b8; --accent:#3b82f6; --accent2:#22c55e; --danger:#ef4444;
-         --cf-orange:#f6821d; }
+  :root{
+    --bg:#f0f4ff; --panel:#ffffff; --text:#1a1a2e; --muted:#64748b;
+    --brand:#6366f1; --brand-d:#4f46e5; --brand-light:#eef2ff;
+    --ok:#10b981; --err:#ef4444; --warn:#f59e0b;
+    --radius:16px; --shadow:0 4px 24px rgba(99,102,241,.08);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
-       background:linear-gradient(160deg,#0f172a,#111827);color:var(--txt);min-height:100vh;padding:24px}
-  .wrap{max-width:760px;margin:0 auto}
-  h1{font-size:24px;margin-bottom:4px;display:flex;align-items:center;gap:10px}
-  h1 span{font-size:13px;padding:3px 10px;border-radius:6px;font-weight:400}
-  .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
-  .card h2{font-size:15px;margin-bottom:12px;color:#cbd5e1}
-  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 5px}
-  input{width:100%;background:#0b1220;border:1px solid var(--line);color:var(--txt);
-        padding:11px 12px;border-radius:9px;font-size:14px;outline:none}
-  input:focus{border-color:var(--accent)}
-  .row{display:flex;gap:10px;flex-wrap:wrap} .row>*{flex:1}
-  .chips{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-  .chip{background:#0b1220;border:1px solid var(--line);color:var(--muted);
-        padding:9px 14px;border-radius:9px;cursor:pointer;font-size:13px;user-select:none}
-  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.go{width:100%;margin-top:16px;background:var(--accent2);color:#06281a;border:none;
-            padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
-  button.go:disabled{opacity:.5;cursor:not-allowed}
-  .status{margin-top:14px;font-size:13px;color:var(--muted);min-height:20px}
-  .status.err{color:var(--danger)} .status.ok{color:var(--accent2)}
-  .result{margin-top:14px;display:none}
-  .result img{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
-  .result a.dl{display:inline-block;margin-top:10px;background:var(--accent);color:#fff;
-               padding:9px 16px;border-radius:9px;text-decoration:none;font-size:13px}
-  .note{font-size:11px;color:#64748b;line-height:1.6;margin-top:6px}
-  .badge{font-size:11px;padding:3px 10px;border-radius:6px}
-  .badge.ok{background:#064e3b;color:#6ee7b7} .badge.err{background:#7f1d1d;color:#fca5a5}
-  .badge.cf{background:#422006;color:#fdba74}
+  body{font:15px/1.6 var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+
+  /* ── Header ── */
+  .hero{text-align:center;padding:48px 20px 32px;background:linear-gradient(135deg,#667eea 76%,#764ba2)}
+  .hero .badge{display:inline-block;font-size:12px;font-weight:600;color:#a5b4fc;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+  .hero h1{color:#fff;font-size:clamp(26px,4vw,42px);font-weight:800;line-height:1.2;margin-bottom:10px}
+  .hero p{color:#c7d2fe;font-size:clamp(14px,1.6vw,17px);max-width:600px;margin:0 auto}
+
+  /* ── Main Card ── */
+  .main{max-width:720px;margin:-28px auto 40px;padding:0 20px}
+  .card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:36px}
+
+  /* ── URL Input ── */
+  .field-label{font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+  .url-bar{display:flex;gap:10px}
+  .url-bar input{flex:1;border:2px solid #e2e8f0;border-radius:12px;padding:14px 18px;font-size:16px;font:inherit;transition:.2s;outline:none}
+  .url-bar input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
+  .url-bar button{border:none;background:var(--brand);color:#fff;font-size:16px;font-weight:700;padding:14px 28px;border-radius:12px;cursor:pointer;white-space:nowrap;transition:.15s;display:flex;align-items:center;gap:8px}
+  .url-bar button:hover{background:var(--brand-d);transform:translateY(-1px)}
+  .url-bar button:active{transform:translateY(0)}
+  .url-bar button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .url-hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* ── Options Grid ── */
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px}
+  @media(max-width:520px){.opts{grid-template-columns:1fr}}
+  .opt-group h3{font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+
+  /* Device chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:10px 18px;border:2px solid #e2e8f0;border-radius:12px;background:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;user-select:none}
+  .chip:hover{border-color:#c7d2fe}
+  .chip.active{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
+
+  /* Toggle pills */
+  .pills{display:inline-flex;border:2px solid #e2e8f0;border-radius:999px;overflow:hidden}
+  .pill{padding:9px 20px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:#fff;color:var(--muted);transition:.15s}
+  .pill + .pill{border-left:2px solid #e2e8f0}
+  .pill.active{background:var(--brand);color:#fff}
+  .pill:first-child{border-radius:999px 0 0 999px}
+  .pill:last-child{border-radius:0 999px 999px 0}
+
+  /* Format buttons */
+  .fmt-btns{display:flex;gap:8px}
+  .fmt-btn{flex:1;padding:10px;border:2px solid #e2e8f0;border-radius:12px;background:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;text-align:center}
+  .fmt-btn:hover{border-color:#c7d2fe}
+  .fmt-btn.active{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
+
+  /* Custom size row (hidden by default) */
+  .custom-row{display:none;gap:10px;margin-top:10px}
+  .custom-row.show{display:flex}
+  .custom-row input{width:50%;border:2px solid #e2e8f0;border-radius:10px;padding:10px 12px;font:inherit;font-size:14px}
+
+  /* ── Status bar ── */
+  .status{margin-top:20px;padding:12px 16px;border-radius:10px;font-size:14px;display:none;font-weight:500}
+  .status.ok{display:block;background:#ecfdf5;color:var(--ok);border:1px solid #a7f3d0}
+  .status.err{display:block;background:#fef2f2;color:var(--err);border:1px solid #fecaca}
+  .status.info{display:block;background:#eff6ff;color:var(--brand);border:1px solid #bfdbfe}
+  .progress{display:none;align-items:center;gap:10px;margin-top:16px}
+  .progress.show{display:flex}
+  .spinner{width:22px;height:22px;border:3px solid #e2e8f0;border-top-color:var(--brand);border-radius:50%;animation:spin .6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── Result ── */
+  .result-area{margin-top:28px;display:none}
+  .result-area.show{display:block}
+  .result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+  .result-header h3{font-size:15px;font-weight:700}
+  .result-btns{display:flex;gap:8px}
+  .result-btns button{padding:8px 16px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+  .result-btns button:hover{border-color:var(--brand);color:var(--brand)}
+  .result-btns button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .result-btns button.primary:hover{background:var(--brand-d);color:#fff}
+  .preview-box{border:2px solid #e2e8f0;border-radius:14px;overflow:auto;max-height:65vh;background:
+    repeating-conic-gradient(#f1f5f9 0% 25%,#fff 0% 50%) 50%/20px 20px;padding:10px}
+  .preview-box img{display:block;max-width:100%;border-radius:8px}
+  .meta-info{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+
+  /* ── Footer ── */
+  footer{text-align:center;padding:24px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>☁️ 云端长截图 <span id="health" class="badge">检测中…</span></h1>
-  <div class="sub">Cloudflare Browser Rendering · 常驻云端 · 无需令牌 · 打开即用</div>
 
-  <div class="card">
-    <h2>截图设置</h2>
-    <label>目标网址（必须含 http:// 或 https://）</label>
-    <input id="url" placeholder="https://example.com" autocomplete="off" />
+<header class="hero">
+  <div class="badge">FREE · NO SIGNUP · NO WATERMARK</div>
+  <h1>Capture a Full-Page Screenshot of Any Website</h1>
+  <p>Capture any webpage — desktop, tablet, or mobile, full page or above-the-fold — as JPG, PNG, or WebP</p>
+</header>
 
-    <label>图片格式</label>
-    <div class="chips" id="fmtChips">
-      <div class="chip active" data-v="jpg">JPG</div>
-      <div class="chip" data-v="png">PNG</div>
-      <div class="chip" data-v="webp">WebP</div>
+<main class="main">
+<div class="card">
+
+  <!-- URL 输入 -->
+  <div class="field-label">Website URL</div>
+  <div class="url-bar">
+    <input type="text" id="urlInput" placeholder="https://example.com" spellcheck="false" autofocus />
+    <button id="captureBtn" onclick="doCapture()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Capture
+    </button>
+  </div>
+  <div class="url-hint">Enter the full URL including https://</div>
+
+  <!-- 进度条 -->
+  <div class="progress" id="progress">
+    <div class="spinner"></div>
+    <span id="progressText">正在截取…</span>
+  </div>
+
+  <!-- 状态消息 -->
+  <div id="status" class="status"></div>
+
+  <!-- 选项区 -->
+  <div class="opts">
+    <!-- 设备 -->
+    <div class="opt-group">
+      <h3>DEVICE</h3>
+      <div class="chips" id="deviceChips">
+        <span class="chip active" data-dev="desktop" title="1280×900">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:4px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Desktop
+        </span>
+        <span class="chip" data-dev="tablet" title="768×1024">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:4px"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>Tablet
+        </span>
+        <span class="chip" data-dev="mobile" title="375×812">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:4px"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>Mobile
+        </span>
+        <span class="chip" data-dev="custom" title="自定义尺寸">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:4px"><path d="M12 3v18M3 12h18"/></svg>Custom
+        </span>
+      </div>
+      <div class="custom-row" id="customRow">
+        <input type="number" id="custW" placeholder="宽度(px)" value="1280" min="200" max="3840" />
+        <input type="number" id="custH" placeholder="高度(px)" value="900" min="200" max="21600" />
+      </div>
     </div>
 
-    <label>设备</label>
-    <div class="chips" id="devChips">
-      <div class="chip active" data-v="desktop">Desktop (1280)</div>
-      <div class="chip" data-v="tablet">Tablet (768)</div>
-      <div class="chip" data-v="mobile">Mobile (375)</div>
-      <div class="chip" data-v="custom">自定义</div>
-    </div>
+    <!-- 截图模式 & 格式 -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="opt-group">
+        <h3>CAPTURE</h3>
+        <div class="pills">
+          <button class="pill active" data-mode="full">Full page</button>
+          <button class="pill" data-mode="viewport">Above the fold</button>
+        </div>
+      </div>
 
-    <div class="row" style="margin-top:12px">
-      <div><label>视口宽度 (px)</label><input id="width" value="1280" /></div>
-      <div><label>视口高度 (px)</label><input id="height" value="900" /></div>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <div><label>加载等待 (ms)</label><input id="wait" value="1500" /></div>
-      <div><label>清晰度 (1x~3x)</label><input id="scale" value="2" /></div>
-    </div>
-
-    <button class="go" id="shotBtn">🚀 生成截图</button>
-    <div class="status" id="status"></div>
-    <div class="result" id="result">
-      <img id="shotImg" alt="截图结果" />
-      <br/><a class="dl" id="dlBtn" download>⬇️ 下载图片</a>
+      <div class="opt-group">
+        <h3>FORMAT</h3>
+        <div class="fmt-btns" id="formatBtns">
+          <button class="fmt-btn active" data-fmt="jpg">JPG</button>
+          <button class="fmt-btn" data-fmt="png">PNG</button>
+          <button class="fmt-btn" data-fmt="webp">WebP</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="note">
-      ☁️ 本服务运行在 <strong>Cloudflare 全球边缘网络</strong>上，使用 Cloudflare Browser Rendering（无头 Chromium）截取网页。
-      <br/>✅ 不依赖本机电脑、无需 GitHub 令牌、没有 2000 分钟/月限制。
-      <br/>✅ 绑定你的 <code>.dev</code> 域名后，全球 CDN 加速访问。
+  <!-- 结果区域 -->
+  <div class="result-area" id="resultArea">
+    <div class="result-header">
+      <h3>📸 Screenshot Result</h3>
+      <div class="result-btns">
+        <button class="primary" onclick="downloadResult()">⬇ Download</button>
+        <button onclick="copyResult()">📋 Copy</button>
+        <button onclick="openNewTab()">🔍 New Tab</button>
+      </div>
     </div>
+    <div class="preview-box" id="previewBox"></div>
+    <div class="meta-info" id="metaInfo"></div>
   </div>
+
 </div>
+</main>
+
+<footer>
+  LongShot Web · 云端 Cloudflare 优先 · 本地 localhost 兜底 · 打开即用
+</footer>
 
 <script>
-const $ = id => document.getElementById(id);
-let fmt='jpg', device='desktop';
+(function(){
+  "use strict";
 
-function bindChips(id, cb){
-  const box=$(id);
-  box.querySelectorAll('.chip').forEach(c=>{
-    c.onclick=()=>{ box.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-      c.classList.add('active'); cb(c.dataset.v); };
-  });
-}
-bindChips('fmtChips', v=>fmt=v);
-bindChips('devChips', v=>device=v);
+  // ─── 后端配置 ───
+  // 本地打开(file:// 或 localhost) → 云端优先 + 本地兜底
+  // 云端部署(pages.dev / .dev)      → 只用云端（访客没有本地服务）
+  var _host = location.hostname;
+  var IS_LOCAL = (_host === "localhost" || _host === "127.0.0.1" || _host === "");
+  var CLOUD_API = IS_LOCAL ? "https://longshot-cloud.pages.dev" : location.origin;
+  var LOCAL_API = "http://localhost:8080";
 
-function setStatus(msg, cls=''){ const s=$('status'); s.textContent=msg; s.className='status '+cls; }
+  // ─── State ───
+  var state = {
+    device: "desktop",
+    mode: "full",
+    format: "jpg",
+    lastBlob: null,
+    lastUrl: null
+  };
 
-// 健康检查
-fetch('/api/health').then(r=>r.json()).then(j=>{
-  $('health').textContent = 'Cloudflare 在线';
-  $('health').className = 'badge cf';
-}).catch(()=>{ $('health').textContent='连接失败'; $('health').className='badge err'; });
+  // ─── DOM refs ───
+  var $ = function(id){ return document.getElementById(id); };
+  var urlInput=$("urlInput"), captureBtn=$("captureBtn");
+  var statusEl=$("status"), progressEl=$("progress"), progressText=$("progressText");
+  var resultArea=$("resultArea"), previewBox=$("previewBox"), metaInfo=$("metaInfo");
 
-async function startShot(){
-  const url=$('url').value.trim();
-  if(!url){ setStatus('请填写目标网址','err'); return; }
-  if(!/^https?:\/\//.test(url)){ setStatus('网址必须以 http:// 或 https:// 开头','err'); return; }
-
-  $('shotBtn').disabled=true; $('result').style.display='none';
-  setStatus('① Cloudflare 边缘节点截图中…');
-
-  try{
-    const resp = await fetch('/api/screenshot',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        url, format:fmt, device,
-        fullPage:true,
-        width:$('width').value, height:$('height').value,
-        wait:$('wait').value, scale:$('scale').value
-      })
-    });
-    if(!resp.ok){
-      const err = await resp.json().catch(()=>({error:resp.statusText}));
-      setStatus('截图失败：'+(err.error||resp.status),'err');
-      $('shotBtn').disabled=false; return;
-    }
-    const blob = await resp.blob();
-    const imgUrl = URL.createObjectURL(blob);
-    $('shotImg').src = imgUrl;
-    $('dlBtn').href = imgUrl;
-    $('dlBtn').setAttribute('download', `screenshot.${fmt}`);
-    $('result').style.display='block';
-    setStatus('② 截图完成 ✓ 已显示在下方','ok');
-  }catch(e){
-    setStatus('请求失败：'+e.message,'err');
+  // ─── Status helpers ───
+  function setStatus(msg, type){
+    statusEl.textContent=msg; statusEl.className="status "+(type||"");
+    statusEl.style.display="block";
   }
-  $('shotBtn').disabled=false;
-}
-$('shotBtn').onclick = startShot;
+  function hideStatus(){ statusEl.style.display="none"; }
+  function showProgress(msg){
+    progressText.textContent=msg||"正在截取…"; progressEl.classList.add("show");
+  }
+  function hideProgress(){ progressEl.classList.remove("show"); }
+
+  // ─── Device chip selection ───
+  document.querySelectorAll("#deviceChips .chip").forEach(function(chip){
+    chip.addEventListener("click", function(){
+      document.querySelectorAll("#deviceChips .chip").forEach(function(c){ c.classList.remove("active"); });
+      this.classList.add("active");
+      state.device=this.dataset.dev;
+      $("customRow").classList.toggle("show", state.device==="custom");
+    });
+  });
+
+  // ─── Mode toggle ───
+  document.querySelectorAll(".pill").forEach(function(pill){
+    pill.addEventListener("click", function(){
+      document.querySelectorAll(".pill").forEach(function(p){ p.classList.remove("active"); });
+      this.classList.add("active");
+      state.mode=this.dataset.mode;
+    });
+  });
+
+  // ─── Format selection ───
+  document.querySelectorAll("#fmt-btns .fmt-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll("#fmt-btns .fmt-btn").forEach(function(b){ b.classList.remove("active"); });
+      this.classList.add("active");
+      state.format=this.dataset.fmt;
+    });
+  });
+
+  // ─── 安全读取响应文本 ───
+  async function safeText(r){
+    try { return (await r.text()) || ""; } catch(_) { return ""; }
+  }
+
+  // ─── 调用截图接口（本地：云端优先+本地兜底；云端：只用云端） ───
+  async function callScreenshot(payload){
+    var opts = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    };
+
+    if (IS_LOCAL) {
+      // 1) 云端优先
+      try {
+        var rc = await fetch(CLOUD_API + "/api/screenshot", opts);
+        if (rc.ok) return { resp: rc, where: "cloud" };
+      } catch(_) { /* 云端连不上，落到本地 */ }
+
+      // 2) 本地兜底
+      try {
+        var rl = await fetch(LOCAL_API + "/api/screenshot", opts);
+        if (rl.ok) return { resp: rl, where: "local" };
+        throw new Error(await safeText(rl) || "本地后端返回错误");
+      } catch(e) {
+        throw new Error("云端不可用，本地也失败：" + e.message + "（请先运行 node server.js）");
+      }
+    } else {
+      // 云端部署：只用云端（访客本机没有 localhost 服务）
+      var rr = await fetch(CLOUD_API + "/api/screenshot", opts);
+      if (rr.ok) return { resp: rr, where: "cloud" };
+      var msg = await safeText(rr);
+      try { var j = JSON.parse(msg); if (j.error) msg = j.error; } catch(_) {}
+      throw new Error(msg || ("云端返回 HTTP " + rr.status));
+    }
+  }
+
+  // ─── Core: capture via API ───
+  async function doCapture(){
+    var target=urlInput.value.trim();
+    if(!target){ setStatus("请输入网址。","warn"); urlInput.focus(); return; }
+    if(!/^https?:\/\//i.test(target)){
+      target="https://"+target;
+      urlInput.value=target;
+    }
+
+    // UI state
+    captureBtn.disabled=true;
+    captureBtn.innerHTML='<div class="spinner" style="width:18px;height:18px;border-width:2px"></div> Capturing…';
+    hideStatus(); showProgress("正在连接服务器…");
+    resultArea.classList.remove("show");
+
+    try {
+      var customW=parseInt($("custW").value,10)||1280;
+      var customH=parseInt($("custH").value,10)||900;
+
+      var payload={
+        url: target,
+        device: state.device,
+        fullPage: state.mode==="full",
+        format: state.format,
+        quality: 0.92,
+        scale: 2,
+        width: customW,
+        height: customH
+      };
+
+      showProgress("正在加载页面并截图（首次可能需要几秒启动浏览器）…");
+
+      var result = await callScreenshot(payload);
+      var resp = result.resp;
+      var where = result.where; // "cloud" | "local"
+
+      if(!resp.ok){
+        var errText="";
+        try{ errText=await resp.text(); }catch(e){}
+        // 尝试解析 JSON 错误
+        try{
+          var errJson=JSON.parse(errText);
+          throw new Error(errJson.error || errText || "服务器错误 ("+resp.status+")");
+        }catch(e){
+          if(e.message.indexOf("截图失败")>=0) throw e;
+          throw new Error("服务器错误 ("+resp.status+"): "+(errText||"未知错误"));
+        }
+      }
+
+      var blob=await resp.blob();
+      if(blob.size===0) throw new Error("截图结果为空，该网址可能无法访问。");
+
+      state.lastBlob=blob;
+      state.lastUrl=target;
+
+      // 显示结果
+      var objectUrl=URL.createObjectURL(blob);
+      previewBox.innerHTML='<img src="'+objectUrl+'" alt="screenshot" />';
+
+      var fmtName=state.format.toUpperCase();
+      var kb=Math.round(blob.size/1024);
+      metaInfo.textContent="格式: "+fmtName+" · 大小: "+kb+" KB · 网址: "+target+
+        " · 模式: "+(state.mode==="full"?"整页":"视口")+" · 设备: "+state.device;
+
+      resultArea.classList.add("show");
+      var whereTxt = where==="cloud" ? "云端 Cloudflare (longshot-cloud.pages.dev)" : "本地 localhost:8080";
+      setStatus("✅ 截取成功（"+whereTxt+"）！点击 Download 下载。","ok");
+      resultArea.scrollIntoView({behavior:"smooth", block:"nearest"});
+
+    } catch(err) {
+      setStatus("❌ "+err.message,"err");
+      console.error(err);
+    } finally {
+      captureBtn.disabled=false;
+      captureBtn.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> Capture';
+      hideProgress();
+    }
+  }
+
+  // ─── Download / Copy / New Tab ───
+  function downloadResult(){
+    if(!state.lastBlob) return;
+    var ext=state.format==="jpg"?"jpg":state.format;
+    var name="screenshot-"+Date.now()+"."+ext;
+    var u=URL.createObjectURL(state.lastBlob);
+    var a=document.createElement("a"); a.href=u; a.download=name; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(u); },2000);
+  }
+
+  async function copyResult(){
+    if(!state.lastBlob) return;
+    try{
+      var mime=state.format==="jpg"?"image/jpeg":state.format==="webp"?"image/webp":"image/png";
+      await navigator.clipboard.write([new ClipboardItem({[mime]: state.lastBlob})]);
+      setStatus("📋 已复制到剪贴板。","ok");
+    }catch(e){
+      setStatus("复制失败："+e.message+"（请改用下载）。","err");
+    }
+  }
+
+  function openNewTab(){
+    var img=previewBox.querySelector("img");
+    if(img && img.src){ window.open(img.src,"_blank"); }
+  }
+
+  // ─── Enter key to capture ───
+  urlInput.addEventListener("keydown", function(e){
+    if(e.key==="Enter") doCapture();
+  });
+
+  // ─── 后端健康检查（加载时提示当前连接状态） ───
+  (function checkBackend(){
+    fetch(CLOUD_API + "/api/health")
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.status==="ok"){
+          console.log("✅ 云端就绪:", d.engine);
+          setStatus(IS_LOCAL ? "☁️ 已连接云端 Cloudflare（longshot-cloud.pages.dev）" : "☁️ 已连接云端 Cloudflare","info");
+          return;
+        }
+        throw new Error("cloud not ok");
+      })
+      .catch(function(){
+        if (IS_LOCAL) {
+          // 云端不可用，尝试本地
+          fetch(LOCAL_API + "/api/info")
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+              if(d && d.status==="ok"){
+                console.log("✅ 本地就绪:", d.engine);
+                setStatus("🖥 已连接本地后端（localhost:8080）","info");
+              } else { throw new Error("local not ok"); }
+            })
+            .catch(function(){
+              setStatus("⚠ 未连接：请在 Cloudflare 启用 BROWSER 绑定，或运行 node server.js 启动本地服务。","warn");
+            });
+        } else {
+          setStatus("⚠ 云端后端暂不可用：请在 Cloudflare 启用 BROWSER 绑定后重新部署。","warn");
+        }
+      });
+  })();
+
+  // ─── Expose globals ───
+  window.doCapture=doCapture;
+  window.downloadResult=downloadResult;
+  window.copyResult=copyResult;
+  window.openNewTab=openNewTab;
+
+})();
 </script>
 </body>
 </html>

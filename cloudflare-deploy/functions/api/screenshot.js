@@ -58,7 +58,7 @@ export const onRequestPost = async ({ request, env }) => {
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
     });
 
-    await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 35000 }).catch(() => {});
+    await page.goto(targetUrl, { waitUntil: "load", timeout: 35000 }).catch(() => {});
     await page.waitForTimeout(waitMs);
 
     // 等待图片加载

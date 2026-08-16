@@ -1,7 +1,1 @@
-export const onRequestGet = () => Response.json({
-  status: "ok",
-  engine: "Cloudflare Browser Rendering (Puppeteer)",
-  platform: "Cloudflare Pages + Workers",
-  formats: ["png", "jpg", "webp"],
-  devices: ["desktop", "tablet", "mobile", "custom"]
-});
+LyoqCiAqIENsb3VkZmxhcmUgUGFnZXMgRnVuY3Rpb24g4oCUIEhlYWx0aCBDaGVjawogKi8KZXhwb3J0IGNvbnN0IG9uUmVxdWVzdEdldCA9ICgpID0+IHsKICByZXR1cm4gUmVzcG9uc2UuanNvbih7CiAgICBzdGF0dXM6ICJvayIsCiAgICBlbmdpbmU6ICJ0aHVtLmlvIChGcmVlIFNjcmVlbnNob3QgQVBJKSDigJQgbm8gQnJvd3NlciBSZW5kZXJpbmcgYmluZGluZyByZXF1aXJlZCIsCiAgICBwbGF0Zm9ybTogIkNsb3VkZmxhcmUgUGFnZXMgKyBGdW5jdGlvbnMiLAogICAgZm9ybWF0czogWyJqcGciLCAicG5nIiwgIndlYnAiXSwKICAgIGRldmljZXM6IFsiZGVza3RvcCIsICJ0YWJsZXQiLCAibW9iaWxlIiwgImN1c3RvbSJdLAogICAgZmVhdHVyZXM6IFsiZnVsbFBhZ2UiLCAicXVhbGl0eSBjb250cm9sIiwgInZpZXdwb3J0IHNjYWxpbmciXSwKICAgIHRzOiBuZXcgRGF0ZSgpLnRvSVNPU3RyaW5nKCkKICB9LCB7CiAgICBoZWFkZXJzOiB7CiAgICAgICJBY2Nlc3MtQ29udHJvbC1BbGxvdy1PcmlnaW4iOiAiKiIsCiAgICAgICJDYWNoZS1Db250cm9sIjogIm5vLXN0b3JlIgogICAgfQogIH0pOwp9Owo=

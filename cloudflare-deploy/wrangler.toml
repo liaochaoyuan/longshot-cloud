@@ -1,7 +1,1 @@
-name = "longshot-cloud"
-compatibility_date = "2024-09-23"
-pages_build_output_dir = "."
-
-# Browser Rendering 绑定 — 让 Worker 能跑无头 Chromium 截图
-[[browser_rendering]]
-name = "BROWSER"
+bmFtZSA9ICJsb25nc2hvdC1jbG91ZCIKY29tcGF0aWJpbGl0eV9kYXRlID0gIjIwMjQtMDktMjMiCnBhZ2VzX2J1aWxkX291dHB1dF9kaXIgPSAiLiIK
